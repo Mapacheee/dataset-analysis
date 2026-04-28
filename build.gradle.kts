@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("application")
 }
 
 group = "org.group"
@@ -10,5 +11,14 @@ repositories {
 }
 
 dependencies {}
-
 tasks.test {}
+
+application {
+    mainClass.set("org.group.analysis.AnalysisProject")
+}
+
+tasks.jar {
+    manifest {
+        attributes["Main-Class"] = "org.group.analysis.AnalysisProject"
+    }
+}
