@@ -13,7 +13,7 @@ public class RevertedIndex {
     }
 
     public void addIndex(String word, Post post) {
-        index.putIfAbsent(word, new LinkedList<Post>());
+        index.putIfAbsent(word, new LinkedList<>());
         index.get(word).add(post);
     }
 
