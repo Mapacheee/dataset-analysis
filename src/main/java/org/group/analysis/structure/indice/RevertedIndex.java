@@ -1,28 +1,47 @@
-package org.group.analysis.structure;
+package org.group.analysis.structure.indice;
 
 import org.group.analysis.model.Post;
-
-import java.util.HashMap;
+import org.group.analysis.structure.LinkedList;
+import org.group.analysis.structure.Node;
 
 public class RevertedIndex {
 
-    private HashMap<String, LinkedList<Post>> index;
+    private LinkedList<ContenedorIndice> index;
 
     public RevertedIndex() {
-        this.index = new HashMap<>();
+        this.index = new LinkedList<>();
     }
 
     public void addIndex(String word, Post post) {
-        index.putIfAbsent(word, new LinkedList<>());
-        index.get(word).add(post);
+        Node<ContenedorIndice> curr = index.getHead();
+        ContenedorIndice entrada = null;
+        while (curr != null) {
+            if (curr.getData().getPalabra().equalsIgnoreCase(word)) {
+                entrada = curr.getData();
+                break;
+            }
+            curr = curr.getNext();
+        }
+
+        if (entrada == null) {
+            entrada = new ContenedorIndice(word);
+            index.add(entrada);
+        }
+
+        if (!entrada.getPosts().contains(post)) {
+            entrada.getPosts().add(post);
+        }
     }
 
     public LinkedList<Post> getPosts(String word) {
-        LinkedList<Post> list = index.get(word);
-        if (list == null) {
-            return new LinkedList<Post>();
+        Node<ContenedorIndice> curr = index.getHead();
+        while (curr != null) {
+            if (curr.getData().getPalabra().equalsIgnoreCase(word)) {
+                return curr.getData().getPosts();
+            }
+            curr = curr.getNext();
         }
-        return list;
+        return new LinkedList<Post>();
     }
 
     public LinkedList<Post> buscarInterseccion(LinkedList<String> terminos) {
@@ -32,7 +51,7 @@ public class RevertedIndex {
         }
 
         String primerTermino = terminos.getHead().getData();
-        LinkedList<Post> candidatos = index.get(primerTermino);
+        LinkedList<Post> candidatos = getPosts(primerTermino);
         if (candidatos == null || candidatos.getHead() == null) {
             return resultado;
         }
@@ -45,7 +64,7 @@ public class RevertedIndex {
             Node<String> currTerm = terminos.getHead().getNext();
             while (currTerm != null) {
                 String termino = currTerm.getData();
-                LinkedList<Post> postsDelTermino = index.get(termino);
+                LinkedList<Post> postsDelTermino = getPosts(termino);
                 if (postsDelTermino == null || !postsDelTermino.contains(post)) {
                     coincideConTodos = false;
                     break;

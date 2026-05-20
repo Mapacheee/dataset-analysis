@@ -4,14 +4,11 @@ import org.group.analysis.model.Post;
 import org.group.analysis.model.User;
 import org.group.analysis.structure.LinkedList;
 import org.group.analysis.structure.Node;
-import org.group.analysis.structure.RevertedIndex;
-import org.group.analysis.structure.UserContactsIndex;
+import org.group.analysis.structure.indice.RevertedIndex;
+import org.group.analysis.structure.contacts.UserContactsIndex;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -20,8 +17,7 @@ public class AnalysisProject {
     private static long idPostManual = 2000000L;
 
     public static void main(String[] args) {
-        List<User> usuarios = new ArrayList<>();
-        HashMap<String, User> mapaUsuarios = new HashMap<>();
+        LinkedList<User> usuarios = new LinkedList<>();
 
         try {
             BufferedReader br = new BufferedReader(new FileReader("src/main/resources/dataset.csv"));
@@ -37,29 +33,37 @@ public class AnalysisProject {
 
                 try {
                     String[] data = linea.split(",");
+                    if (data.length < 15) {
+                        linea = br.readLine();
+                        continue;
+                    }
+
                     String username = data[1].replace("\"", "").trim();
                     String biografia = data[3].replace("\"", "").trim();
                     
                     int seguidores = 0;
                     try {
                         seguidores = Integer.parseInt(data[9].replace("\"", "").trim());
-                    } catch (Exception e) {
-						// por si es null
-					}
+                    } catch (Exception e) {}
 
                     int seguidos = 0;
                     try {
                         seguidos = Integer.parseInt(data[10].replace("\"", "").trim());
-                    } catch (Exception e) {
-						// por si es null
-					}
+                    } catch (Exception e) {}
 
-                    Long id = Long.parseLong(data[14].replace("\"", "").trim());
+                    Long id = 0L;
+                    try {
+                        id = Long.parseLong(data[14].replace("\"", "").trim());
+                    } catch (Exception e) {}
 
-                    if (!mapaUsuarios.containsKey(username)) {
+                    if (username.isEmpty() || username.equals("null")) {
+                        linea = br.readLine();
+                        continue;
+                    }
+
+                    if (buscarUsuario(usuarios, username) == null) {
                         User user = new User(id, username, biografia, seguidores, seguidos);
                         usuarios.add(user);
-                        mapaUsuarios.put(username, user);
                     }
 
                 } catch (Exception e) {}
@@ -67,7 +71,6 @@ public class AnalysisProject {
                 linea = br.readLine();
             }
             br.close();
-
 
             RevertedIndex indicePosts = new RevertedIndex();
             UserContactsIndex indiceAmigos = new UserContactsIndex();
@@ -120,7 +123,7 @@ public class AnalysisProject {
                         break;
                     }
                     String username = scanner.nextLine().trim();
-                    User u = mapaUsuarios.get(username);
+                    User u = buscarUsuario(usuarios, username);
                     if (u == null) {
                         System.out.println("No existe el usuario.");
                     } else {
@@ -136,7 +139,7 @@ public class AnalysisProject {
                         break;
                     }
                     String username = scanner.nextLine().trim();
-                    User u = mapaUsuarios.get(username);
+                    User u = buscarUsuario(usuarios, username);
                     if (u == null) {
                         System.out.println("No existe el usuario.");
                     } else {
@@ -163,7 +166,7 @@ public class AnalysisProject {
                         break;
                     }
                     String username = scanner.nextLine().trim();
-                    User u = mapaUsuarios.get(username);
+                    User u = buscarUsuario(usuarios, username);
                     if (u == null) {
                         System.out.println("Usuario no existe.");
                     } else {
@@ -211,7 +214,7 @@ public class AnalysisProject {
                         break;
                     }
                     String username = scanner.nextLine().trim();
-                    User u = mapaUsuarios.get(username);
+                    User u = buscarUsuario(usuarios, username);
                     if (u == null) {
                         System.out.println("No existe.");
                         continue;
@@ -230,7 +233,9 @@ public class AnalysisProject {
                     }
 
                     Post postDestino = null;
-                    for (User user : usuarios) {
+                    Node<User> currUser = usuarios.getHead();
+                    while (currUser != null) {
+                        User user = currUser.getData();
                         Node<Post> curr = user.getPosts().getHead();
                         while (curr != null) {
                             if (curr.getData().getId() == idBusq) {
@@ -240,6 +245,7 @@ public class AnalysisProject {
                             curr = curr.getNext();
                         }
                         if (postDestino != null) break;
+                        currUser = currUser.getNext();
                     }
 
                     if (postDestino == null) {
@@ -266,6 +272,30 @@ public class AnalysisProject {
             System.out.println("Error: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static User buscarUsuario(LinkedList<User> usuarios, String username) {
+        Node<User> curr = usuarios.getHead();
+        while (curr != null) {
+            if (curr.getData().getUsername().equals(username)) {
+                return curr.getData();
+            }
+            curr = curr.getNext();
+        }
+        return null;
+    }
+
+    private static User obtenerUsuarioPorIndice(LinkedList<User> usuarios, int idx) {
+        Node<User> curr = usuarios.getHead();
+        int count = 0;
+        while (curr != null) {
+            if (count == idx) {
+                return curr.getData();
+            }
+            count++;
+            curr = curr.getNext();
+        }
+        return null;
     }
 
     private static boolean filtradoStopWords(String palabra) {
@@ -297,16 +327,18 @@ public class AnalysisProject {
         return palabras;
     }
 
-    private static void generarDatos(List<User> usuarios, RevertedIndex indicePosts, UserContactsIndex indiceAmigos) {
-        Random rand = new Random();
+    private static void generarDatos(LinkedList<User> usuarios, RevertedIndex indicePosts, UserContactsIndex indiceAmigos) {
+        Random rand = new Random(42);
         long idPostInicial = 1000000L;
 
-		// generar amigos
-        for (User u : usuarios) {
+        // generar amigos
+        Node<User> currU1 = usuarios.getHead();
+        while (currU1 != null) {
+            User u = currU1.getData();
             int numAmigos = rand.nextInt(3) + 2; // 2 a 4 amigos
             while (u.getFriends().size() < numAmigos) {
-                User amigo = usuarios.get(rand.nextInt(usuarios.size()));
-                if (!amigo.getUsername().equals(u.getUsername())) {
+                User amigo = obtenerUsuarioPorIndice(usuarios, rand.nextInt(usuarios.size()));
+                if (amigo != null && !amigo.getUsername().equals(u.getUsername())) {
                     u.getFriends().add(amigo.getUsername());
                     indiceAmigos.addContact(u.getUsername(), amigo.getUsername());
 
@@ -314,26 +346,31 @@ public class AnalysisProject {
                     indiceAmigos.addContact(amigo.getUsername(), u.getUsername());
                 }
             }
+            currU1 = currU1.getNext();
         }
 
-		//generar posts
-        for (User u : usuarios) {
+        //generar posts
+        Node<User> currU2 = usuarios.getHead();
+        while (currU2 != null) {
+            User u = currU2.getData();
             int numPosts = rand.nextInt(2) + 1; // 1 o 2 posts
             for (int i = 0; i < numPosts; i++) {
-                String texto = textoAleatorio();
+                String texto = textoAleatorio(rand);
 
                 LinkedList<String> likes = new LinkedList<>();
-				int cantLikes = rand.nextInt(u.getFriends().size()) + 1;
-				String[] amigos = new String[u.getFriends().size()];
-				Node<String> cabeza = u.getFriends().getHead();
-				int idx = 0;
-				while (cabeza != null) {
-					amigos[idx++] = cabeza.getData();
-					cabeza = cabeza.getNext();
-				}
-				for (int j = 0; j < cantLikes; j++) {
-					likes.add(amigos[rand.nextInt(amigos.length)]);
-				}
+                if (!u.getFriends().isEmpty()) {
+                    int cantLikes = rand.nextInt(u.getFriends().size()) + 1;
+                    String[] amigos = new String[u.getFriends().size()];
+                    Node<String> cabeza = u.getFriends().getHead();
+                    int idx = 0;
+                    while (cabeza != null) {
+                        amigos[idx++] = cabeza.getData();
+                        cabeza = cabeza.getNext();
+                    }
+                    for (int j = 0; j < cantLikes; j++) {
+                        likes.add(amigos[rand.nextInt(amigos.length)]);
+                    }
+                }
 
                 Post post = new Post(idPostInicial++, u.getUsername(), texto, likes);
                 u.getPosts().add(post);
@@ -345,6 +382,7 @@ public class AnalysisProject {
                     cabezaNodo = cabezaNodo.getNext();
                 }
             }
+            currU2 = currU2.getNext();
         }
     }
 
@@ -373,13 +411,8 @@ public class AnalysisProject {
         imprimirLista(post.getLikes());
     }
 
-	private static String textoAleatorio() {
-		String[] palabras = {"perro", "gato", "blanco", "casa", "arbol", "auto"};
-		String palabra = "";
-
-		Random rand = new Random();
-		rand.nextInt(palabras.length);
-
-		return palabras[rand.nextInt(palabras.length)];
-	}
+    private static String textoAleatorio(Random rand) {
+        String[] palabras = {"perro", "gato", "blanco", "casa", "arbol", "auto"};
+        return palabras[rand.nextInt(palabras.length)];
+    }
 }
