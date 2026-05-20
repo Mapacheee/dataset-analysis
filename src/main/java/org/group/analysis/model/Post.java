@@ -6,19 +6,19 @@ import java.util.Objects;
 
 public class Post {
 
-    private String id;
+    private Long id;
     private String autor;
     private String text;
     private LinkedList<String> likes;
 
-    public Post(String id, String autor, String text, LinkedList<String> likes) {
+    public Post(Long id, String autor, String text, LinkedList<String> likes) {
         this.id = id;
         this.autor = autor;
         this.text = text;
         this.likes = likes;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
     public String getAutor() {
@@ -36,7 +36,7 @@ public class Post {
     public void setAutor(String autor) {
         this.autor = autor;
     }
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
