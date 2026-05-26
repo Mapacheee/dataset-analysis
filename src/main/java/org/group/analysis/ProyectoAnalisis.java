@@ -100,13 +100,10 @@ public class ProyectoAnalisis {
                 } 
                 else if (opcion.equals("2")) {
                     System.out.print("Ingrese usuario: ");
-                    if (!scanner.hasNextLine()) {
-                        continuar = false;
-                        break;
-                    }
                     String nombreUsuario = scanner.nextLine().trim();
-                    Usuario u = buscarUsuario(usuarios, nombreUsuario);
-                    if (u == null) {
+                    Usuario usuario = buscarUsuario(usuarios, nombreUsuario);
+
+                    if (usuario == null) {
                         System.out.println("No existe el usuario.");
                     } else {
                         ListaEnlazada<String> amigos = indiceAmigos.obtenerContactos(nombreUsuario);
@@ -121,17 +118,17 @@ public class ProyectoAnalisis {
                         break;
                     }
                     String nombreUsuario = scanner.nextLine().trim();
-                    Usuario u = buscarUsuario(usuarios, nombreUsuario);
-                    if (u == null) {
+                    Usuario usuario = buscarUsuario(usuarios, nombreUsuario);
+                    if (usuario == null) {
                         System.out.println("No existe el usuario.");
                     } else {
-                        System.out.println("Usuario: @" + u.getNombreUsuario());
-                        System.out.println("Biografía: " + u.getBiografia());
-                        System.out.println("Seguidores: " + u.getSeguidores() + " | Seguidos: " + u.getSeguidos());
+                        System.out.println("Usuario: @" + usuario.getNombreUsuario());
+                        System.out.println("Biografía: " + usuario.getBiografia());
+                        System.out.println("Seguidores: " + usuario.getSeguidores() + " | Seguidos: " + usuario.getSeguidos());
                         System.out.print("Amigos: ");
-                        imprimirLista(u.getAmigos());
+                        imprimirLista(usuario.getAmigos());
                         System.out.println("Publicaciones:");
-                        Nodo<Publicacion> actual = u.getPublicaciones().getCabeza();
+                        Nodo<Publicacion> actual = usuario.getPublicaciones().getCabeza();
                         while (actual != null) {
                             System.out.println("  ID Publicación: " + actual.getDato().getId());
                             System.out.println("  Texto: " + actual.getDato().getTexto());
