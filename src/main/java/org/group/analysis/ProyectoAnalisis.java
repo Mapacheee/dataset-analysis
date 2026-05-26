@@ -143,26 +143,18 @@ public class ProyectoAnalisis {
                 } 
                 else if (opcion.equals("4")) {
                     System.out.print("Ingrese su usuario: ");
-                    if (!scanner.hasNextLine()) {
-                        continuar = false;
-                        break;
-                    }
                     String nombreUsuario = scanner.nextLine().trim();
-                    Usuario u = buscarUsuario(usuarios, nombreUsuario);
-                    if (u == null) {
+                    Usuario usuario = buscarUsuario(usuarios, nombreUsuario);
+                    if (usuario == null) {
                         System.out.println("Usuario no existe.");
                     } else {
                         System.out.print("Ingrese texto: ");
-                        if (!scanner.hasNextLine()) {
-                            continuar = false;
-                            break;
-                        }
                         String texto = scanner.nextLine().trim();
                         if (texto.isEmpty()) {
                             System.out.println("Vacío.");
                         } else {
                             boolean yaExiste = false;
-                            Nodo<Publicacion> actual = u.getPublicaciones().getCabeza();
+                            Nodo<Publicacion> actual = usuario.getPublicaciones().getCabeza();
                             while (actual != null) {
                                 if (actual.getDato().getTexto().equalsIgnoreCase(texto)) {
                                     yaExiste = true;
@@ -172,17 +164,17 @@ public class ProyectoAnalisis {
                             }
 
                             if (yaExiste) {
-                                System.out.println("Error: Duplicado.");
+                                System.out.println("Error: duplicado.");
                             } else {
                                 long id = idPublicacion++;
-                                Publicacion nuevo = new Publicacion(id, u.getNombreUsuario(), texto, new ListaEnlazada<String>());
-                                u.getPublicaciones().agregar(nuevo);
+                                Publicacion nuevo = new Publicacion(id, usuario.getNombreUsuario(), texto, new ListaEnlazada<String>());
+                                usuario.getPublicaciones().agregar(nuevo);
 
                                 ListaEnlazada<String> palabras = obtenerPalabrasClave(texto);
-                                Nodo<String> n = palabras.getCabeza();
-                                while (n != null) {
-                                    indicePublicaciones.agregarIndice(n.getDato(), nuevo);
-                                    n = n.getSiguiente();
+                                Nodo<String> nodo = palabras.getCabeza();
+                                while (nodo != null) {
+                                    indicePublicaciones.agregarIndice(nodo.getDato(), nuevo);
+                                    nodo = nodo.getSiguiente();
                                 }
                                 System.out.println("Publicación guardada. ID: " + id);
                             }
@@ -202,10 +194,6 @@ public class ProyectoAnalisis {
                         continue;
                     }
                     System.out.print("Ingrese ID de la publicación: ");
-                    if (!scanner.hasNextLine()) {
-                        continuar = false;
-                        break;
-                    }
                     long idBusq = 0;
                     try {
                         idBusq = Long.parseLong(scanner.nextLine().trim());
