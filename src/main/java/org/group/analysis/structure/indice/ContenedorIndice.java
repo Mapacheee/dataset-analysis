@@ -1,22 +1,22 @@
 package org.group.analysis.structure.indice;
 
-import org.group.analysis.model.Post;
-import org.group.analysis.structure.LinkedList;
+import org.group.analysis.model.Publicacion;
+import org.group.analysis.structure.ListaEnlazada;
 
 class ContenedorIndice {
     private String palabra;
-    private LinkedList<Post> posts;
+    private ListaEnlazada<Publicacion> publicaciones;
 
     public ContenedorIndice(String palabra) {
         this.palabra = palabra;
-        this.posts = new LinkedList<>();
+        this.publicaciones = new ListaEnlazada<>();
     }
 
     public String getPalabra() {
         return palabra;
     }
 
-    public LinkedList<Post> getPosts() {
-        return posts;
+    public ListaEnlazada<Publicacion> getPublicaciones() {
+        return publicaciones;
     }
 }
