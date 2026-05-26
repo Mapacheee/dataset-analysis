@@ -1,64 +1,51 @@
 package org.group.analysis;
 
-import org.group.analysis.modelos.Publicacion;
-import org.group.analysis.modelos.Usuario;
-import org.group.analysis.estructuras.ListaEnlazada;
-import org.group.analysis.estructuras.Nodo;
-import org.group.analysis.estructuras.indice.IndiceInvertido;
-import org.group.analysis.estructuras.contactos.IndiceContactos;
+import org.group.analysis.model.Publicacion;
+import org.group.analysis.model.Usuario;
+import org.group.analysis.structure.ListaEnlazada;
+import org.group.analysis.structure.Nodo;
+import org.group.analysis.structure.indice.IndiceInvertido;
+import org.group.analysis.structure.contactos.IndiceContactos;
+import com.opencsv.CSVReader;
 
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Random;
 import java.util.Scanner;
 
 public class ProyectoAnalisis {
 
-    private static long idPublicacionManual = 2000000L;
+    private static long idPublicacion = 2000000L;
 
     public static void main(String[] args) {
         ListaEnlazada<Usuario> usuarios = new ListaEnlazada<>();
 
         try {
-            BufferedReader br = new BufferedReader(new FileReader("src/main/resources/dataset.csv"));
-            String linea = br.readLine();
-            boolean esCabecera = true;
-
-            while (linea != null) {
-                if (esCabecera) {
-                    esCabecera = false;
-                    linea = br.readLine();
-                    continue;
-                }
-
+            CSVReader csvReader = new CSVReader(new FileReader("src/main/resources/dataset.csv"));
+            String[] data = csvReader.readNext();
+            while (data != null) {
                 try {
-                    String[] data = linea.split(",");
-                    if (data.length < 15) {
-                        linea = br.readLine();
-                        continue;
-                    }
-
-                    String nombreUsuario = data[1].replace("\"", "").trim();
-                    String biografia = data[3].replace("\"", "").trim();
+                    String nombreUsuario = data[1].trim();
+                    String biografia = data[3].trim();
                     
                     int seguidores = 0;
                     try {
-                        seguidores = Integer.parseInt(data[9].replace("\"", "").trim());
-                    } catch (Exception e) {}
+                        seguidores = Integer.parseInt(data[9].trim());
+                    } catch (Exception e) {
+                        // puede ser null
+                    }
 
                     int seguidos = 0;
                     try {
-                        seguidos = Integer.parseInt(data[10].replace("\"", "").trim());
-                    } catch (Exception e) {}
+                        seguidos = Integer.parseInt(data[10].trim());
+                    } catch (Exception e) {
+                        // puede ser null
+                    }
 
                     Long id = 0L;
                     try {
-                        id = Long.parseLong(data[14].replace("\"", "").trim());
-                    } catch (Exception e) {}
-
-                    if (nombreUsuario.isEmpty() || nombreUsuario.equals("null")) {
-                        linea = br.readLine();
-                        continue;
+                        id = Long.parseLong(data[14].trim());
+                    } catch (Exception e) {
+                        // puede ser null
                     }
 
                     if (buscarUsuario(usuarios, nombreUsuario) == null) {
@@ -68,9 +55,9 @@ public class ProyectoAnalisis {
 
                 } catch (Exception e) {}
 
-                linea = br.readLine();
+                data = csvReader.readNext();
             }
-            br.close();
+            csvReader.close();
 
             IndiceInvertido indicePublicaciones = new IndiceInvertido();
             IndiceContactos indiceAmigos = new IndiceContactos();
@@ -87,11 +74,6 @@ public class ProyectoAnalisis {
                 System.out.println("5. Dar like a una publicación");
                 System.out.println("6. Salir");
                 System.out.print("Elija opción (1-6): ");
-
-                if (!scanner.hasNextLine()) {
-                    continuar = false;
-                    break;
-                }
 
                 String opcion = scanner.nextLine().trim();
                 System.out.println("---------------------------------------------");
@@ -192,7 +174,7 @@ public class ProyectoAnalisis {
                             if (yaExiste) {
                                 System.out.println("Error: Duplicado.");
                             } else {
-                                long id = idPublicacionManual++;
+                                long id = idPublicacion++;
                                 Publicacion nuevo = new Publicacion(id, u.getNombreUsuario(), texto, new ListaEnlazada<String>());
                                 u.getPublicaciones().agregar(nuevo);
 
@@ -202,7 +184,7 @@ public class ProyectoAnalisis {
                                     indicePublicaciones.agregarIndice(n.getDato(), nuevo);
                                     n = n.getSiguiente();
                                 }
-                                System.out.println("Publicación guardada con éxito! ID: " + id);
+                                System.out.println("Publicación guardada. ID: " + id);
                             }
                         }
                     }
@@ -328,22 +310,22 @@ public class ProyectoAnalisis {
     }
 
     private static void generarDatos(ListaEnlazada<Usuario> usuarios, IndiceInvertido indicePublicaciones, IndiceContactos indiceAmigos) {
-        Random rand = new Random(42);
+        Random rand = new Random();
         long idPostInicial = 1000000L;
 
         // generar amigos
         Nodo<Usuario> actualU1 = usuarios.getCabeza();
         while (actualU1 != null) {
-            Usuario u = actualU1.getDato();
+            Usuario usuario = actualU1.getDato();
             int numAmigos = rand.nextInt(3) + 2; // 2 a 4 amigos
-            while (u.getAmigos().tamano() < numAmigos) {
+            while (usuario.getAmigos().tamano() < numAmigos) {
                 Usuario amigo = obtenerUsuarioPorIndice(usuarios, rand.nextInt(usuarios.tamano()));
-                if (amigo != null && !amigo.getNombreUsuario().equals(u.getNombreUsuario())) {
-                    u.getAmigos().agregar(amigo.getNombreUsuario());
-                    indiceAmigos.agregarContacto(u.getNombreUsuario(), amigo.getNombreUsuario());
+                if (amigo != null && !amigo.getNombreUsuario().equals(usuario.getNombreUsuario())) {
+                    usuario.getAmigos().agregar(amigo.getNombreUsuario());
+                    indiceAmigos.agregarContacto(usuario.getNombreUsuario(), amigo.getNombreUsuario());
 
-                    amigo.getAmigos().agregar(u.getNombreUsuario());
-                    indiceAmigos.agregarContacto(amigo.getNombreUsuario(), u.getNombreUsuario());
+                    amigo.getAmigos().agregar(usuario.getNombreUsuario());
+                    indiceAmigos.agregarContacto(amigo.getNombreUsuario(), usuario.getNombreUsuario());
                 }
             }
             actualU1 = actualU1.getSiguiente();
@@ -352,16 +334,16 @@ public class ProyectoAnalisis {
         // generar publicaciones
         Nodo<Usuario> actualU2 = usuarios.getCabeza();
         while (actualU2 != null) {
-            Usuario u = actualU2.getDato();
+            Usuario usuario = actualU2.getDato();
             int numPosts = rand.nextInt(2) + 1; // 1 o 2 posts
             for (int i = 0; i < numPosts; i++) {
                 String texto = textoAleatorio(rand);
 
                 ListaEnlazada<String> likes = new ListaEnlazada<>();
-                if (!u.getAmigos().estaVacia()) {
-                    int cantLikes = rand.nextInt(u.getAmigos().tamano()) + 1;
-                    String[] amigos = new String[u.getAmigos().tamano()];
-                    Nodo<String> cabeza = u.getAmigos().getCabeza();
+                if (!usuario.getAmigos().estaVacia()) {
+                    int cantLikes = rand.nextInt(usuario.getAmigos().tamano()) + 1;
+                    String[] amigos = new String[usuario.getAmigos().tamano()];
+                    Nodo<String> cabeza = usuario.getAmigos().getCabeza();
                     int idx = 0;
                     while (cabeza != null) {
                         amigos[idx++] = cabeza.getDato();
@@ -372,8 +354,8 @@ public class ProyectoAnalisis {
                     }
                 }
 
-                Publicacion publicacion = new Publicacion(idPostInicial++, u.getNombreUsuario(), texto, likes);
-                u.getPublicaciones().agregar(publicacion);
+                Publicacion publicacion = new Publicacion(idPostInicial++, usuario.getNombreUsuario(), texto, likes);
+                usuario.getPublicaciones().agregar(publicacion);
 
                 ListaEnlazada<String> terminos = obtenerPalabrasClave(texto);
                 Nodo<String> cabezaNodo = terminos.getCabeza();
@@ -389,7 +371,7 @@ public class ProyectoAnalisis {
     private static void imprimirLista(ListaEnlazada<String> lista) {
         Nodo<String> actual = lista.getCabeza();
         if (actual == null) {
-            System.out.println("Vacia");
+            System.out.println("vacia");
             return;
         }
         while (actual != null) {
