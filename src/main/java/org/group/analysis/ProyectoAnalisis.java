@@ -7,6 +7,8 @@ import org.group.analysis.structure.Nodo;
 import org.group.analysis.structure.indice.IndiceInvertido;
 import org.group.analysis.structure.contactos.IndiceContactos;
 import com.opencsv.CSVReader;
+import org.group.analysis.structure.grafo.Grafo;
+import org.group.analysis.structure.grafo.Grafo.ResultadoBFS;
 
 import java.io.FileReader;
 import java.util.Random;
@@ -63,6 +65,9 @@ public class ProyectoAnalisis {
             IndiceContactos indiceAmigos = new IndiceContactos();
             generarDatos(usuarios, indicePublicaciones, indiceAmigos);
 
+            Grafo grafoSocial = new Grafo();
+            grafoSocial.construirGrafo(usuarios, indiceAmigos);
+
             Scanner scanner = new Scanner(System.in);
             boolean continuar = true;
 
@@ -72,8 +77,9 @@ public class ProyectoAnalisis {
                 System.out.println("3. Ver perfil");
                 System.out.println("4. Crear publicación");
                 System.out.println("5. Dar like a una publicación");
-                System.out.println("6. Salir");
-                System.out.print("Elija opción (1-6): ");
+                System.out.println("6. Ver grados de conexión (BFS)");
+                System.out.println("7. Salir");
+                System.out.print("Elija opción (1-7): ");
 
                 String opcion = scanner.nextLine().trim();
                 System.out.println("---------------------------------------------");
@@ -227,6 +233,24 @@ public class ProyectoAnalisis {
                     }
                 } 
                 else if (opcion.equals("6")) {
+                    System.out.print("Ingrese usuario: ");
+                    String nombreUsuario = scanner.nextLine().trim();
+                    Usuario usuario = buscarUsuario(usuarios, nombreUsuario);
+
+                    if (usuario == null) {
+                        System.out.println("No existe el usuario.");
+                    } else {
+                        ResultadoBFS resultado = grafoSocial.obtenerGradosConexion(nombreUsuario);
+                        System.out.println("Grados de conexión para @" + nombreUsuario + ":");
+                        System.out.print("1° grado (amigos directos): ");
+                        imprimirLista(resultado.getGrado1());
+                        System.out.print("2° grado (amigos de amigos): ");
+                        imprimirLista(resultado.getGrado2());
+                        System.out.print("3° grado (amigos de 2° grado): ");
+                        imprimirLista(resultado.getGrado3());
+                    }
+                }
+                else if (opcion.equals("7")) {
                     System.out.println("saliendo.");
                     continuar = false;
                 } 
