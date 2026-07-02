@@ -9,6 +9,8 @@ import org.group.analysis.structure.contactos.IndiceContactos;
 import com.opencsv.CSVReader;
 import org.group.analysis.structure.grafo.Grafo;
 import org.group.analysis.structure.grafo.Grafo.ResultadoBFS;
+import org.group.analysis.structure.hash.TablaHash;
+import org.group.analysis.structure.hash.EntradaHash;
 
 import java.io.FileReader;
 import java.util.Random;
@@ -68,6 +70,38 @@ public class ProyectoAnalisis {
             Grafo grafoSocial = new Grafo();
             grafoSocial.construirGrafo(usuarios, indiceAmigos);
 
+            // Construir la Tabla Hash para frecuencia de términos (Entrega III)
+            int N = indicePublicaciones.getTamanoVocabulario();
+            int minM = (int) Math.ceil(1.5 * N);
+            int M = TablaHash.siguientePrimo(minM);
+            TablaHash tablaFrecuencia = new TablaHash(M);
+
+            // Poblar la tabla hash recorriendo todas las publicaciones de todos los usuarios
+            Nodo<Usuario> actualU = usuarios.getCabeza();
+            while (actualU != null) {
+                Usuario u = actualU.getDato();
+                Nodo<Publicacion> actualPub = u.getPublicaciones().getCabeza();
+                while (actualPub != null) {
+                    ListaEnlazada<String> palabras = obtenerPalabrasClave(actualPub.getDato().getTexto());
+                    Nodo<String> actualPal = palabras.getCabeza();
+                    while (actualPal != null) {
+                        tablaFrecuencia.insertarOIncrementar(actualPal.getDato());
+                        actualPal = actualPal.getSiguiente();
+                    }
+                    actualPub = actualPub.getSiguiente();
+                }
+                actualU = actualU.getSiguiente();
+            }
+
+            double factorCarga = (double) N / M;
+            System.out.println("Información tabla hash:");
+            System.out.println("Tamaño del vocabulario (N): " + N);
+            System.out.println("Tamaño elegido para la tabla (M): " + M + " (Número primo)");
+            System.out.println("Factor de carga obtenido: " + String.format("%.4f", factorCarga));
+            System.out.println("Total de colisiones: " + tablaFrecuencia.getTotalColisiones());
+            System.out.println("Largo máximo de cadena de colisiones: " + tablaFrecuencia.getLargoMaximoCadena());
+            System.out.println("Largo promedio de cadena de colisiones: " + String.format("%.4f", tablaFrecuencia.getLargoPromedioCadena()));
+            System.out.println();
             Scanner scanner = new Scanner(System.in);
             boolean continuar = true;
 
@@ -78,8 +112,9 @@ public class ProyectoAnalisis {
                 System.out.println("4. Crear publicación");
                 System.out.println("5. Dar like a una publicación");
                 System.out.println("6. Ver grados de conexión (BFS)");
-                System.out.println("7. Salir");
-                System.out.print("Elija opción (1-7): ");
+                System.out.println("7. Ver Top-N términos más frecuentes");
+                System.out.println("8. Salir");
+                System.out.print("Elija opción (1-8): ");
 
                 String opcion = scanner.nextLine().trim();
                 System.out.println("---------------------------------------------");
@@ -249,8 +284,26 @@ public class ProyectoAnalisis {
                         System.out.print("3° grado (amigos de 2° grado): ");
                         imprimirLista(resultado.getGrado3());
                     }
-                }
+                } 
                 else if (opcion.equals("7")) {
+                    System.out.print("Ingrese el valor de N para ver los términos más frecuentes (ej. 5, 10, 20): ");
+                    int topN = 5;
+                    try {
+                        topN = Integer.parseInt(scanner.nextLine().trim());
+                    } catch (Exception e) {
+                        System.out.println("Valor inválido. Se usará N = 5 por defecto.");
+                    }
+                    if (topN <= 0) {
+                        System.out.println("El valor debe ser mayor que 0. Se usará N = 5 por defecto.");
+                        topN = 5;
+                    }
+                    EntradaHash[] topTerminos = tablaFrecuencia.obtenerTopN(topN);
+                    System.out.println("Top-" + topTerminos.length + " términos más frecuentes:");
+                    for (int i = 0; i < topTerminos.length; i++) {
+                        System.out.println((i + 1) + ". \"" + topTerminos[i].getTermino() + "\" - Frecuencia: " + topTerminos[i].getContador());
+                    }
+                }
+                else if (opcion.equals("8")) {
                     System.out.println("saliendo.");
                     continuar = false;
                 } 
@@ -403,7 +456,14 @@ public class ProyectoAnalisis {
     }
 
     private static String textoAleatorio(Random rand) {
-        String[] palabras = {"perro", "gato", "blanco", "casa", "arbol", "auto"};
+        String[] palabras = {
+                "Mi perro esta bailando, le voy a dar unas croquetas",
+                "El gato rompió el sillón",
+                "Mi pieza es blanco",
+                "La casa es linda, pero es chica",
+                "EL arbol se cayo",
+                "El auto fue chocado por sus primos"
+        };
         return palabras[rand.nextInt(palabras.length)];
     }
 }

@@ -80,4 +80,8 @@ public class IndiceInvertido {
 
         return resultado;
     }
+
+    public int getTamanoVocabulario() {
+        return this.indice.tamano();
+    }
 }
