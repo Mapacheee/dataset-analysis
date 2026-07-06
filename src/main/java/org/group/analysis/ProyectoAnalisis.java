@@ -70,13 +70,13 @@ public class ProyectoAnalisis {
             Grafo grafoSocial = new Grafo();
             grafoSocial.construirGrafo(usuarios, indiceAmigos);
 
-            // Construir la Tabla Hash para frecuencia de términos (Entrega III)
+            // construir la tabla hash para frecuencia de terminos
             int N = indicePublicaciones.getTamanoVocabulario();
             int minM = (int) Math.ceil(1.5 * N);
             int M = TablaHash.siguientePrimo(minM);
             TablaHash tablaFrecuencia = new TablaHash(M);
 
-            // Poblar la tabla hash recorriendo todas las publicaciones de todos los usuarios
+            // poblar la tabla hash recorriendo todas las publicaciones de todos los usuarios
             Nodo<Usuario> actualU = usuarios.getCabeza();
             while (actualU != null) {
                 Usuario u = actualU.getDato();
