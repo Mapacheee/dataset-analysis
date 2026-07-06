@@ -18,7 +18,6 @@ public class TablaHash {
     }
 
     /**
-     * Implementación obligatoria de la función hash djb2:
      * hash(0) = 5381
      * hash(i) = hash(i-1) * 33 + c[i]
      */
@@ -60,8 +59,8 @@ public class TablaHash {
     }
 
     /**
-     * Retorna el número total de colisiones.
-     * Si una celda tiene K elementos, aporta K-1 colisiones.
+     * retorna el número total de colisiones
+     * si una celda tiene K elementos, aporta K-1 colisiones
      */
     public int getTotalColisiones() {
         int colisiones = 0;
@@ -75,7 +74,7 @@ public class TablaHash {
     }
 
     /**
-     * Retorna el largo máximo de una cadena de colisiones.
+     * retorna el largo máximo de una cadena de colisiones
      */
     public int getLargoMaximoCadena() {
         int max = 0;
@@ -89,7 +88,7 @@ public class TablaHash {
     }
 
     /**
-     * Retorna el largo promedio de las cadenas de colisiones ocupadas.
+     * retorna el largo promedio de las cadenas de colisiones ocupadas
      */
     public double getLargoPromedioCadena() {
         int totalElementos = 0;
@@ -105,7 +104,7 @@ public class TablaHash {
     }
 
     /**
-     * Recupera todas las entradas de la tabla hash.
+     * recupera todas las entradas de la tabla hash
      */
     public ListaEnlazada<EntradaHash> obtenerTodasLasEntradas() {
         ListaEnlazada<EntradaHash> todas = new ListaEnlazada<>();
@@ -120,8 +119,7 @@ public class TablaHash {
     }
 
     /**
-     * Retorna los N términos más frecuentes ordenados de mayor a menor frecuencia
-     * utilizando Insertion Sort in-place.
+     * retorna los N terminos más frecuentes
      */
     public EntradaHash[] obtenerTopN(int n) {
         ListaEnlazada<EntradaHash> todas = obtenerTodasLasEntradas();
@@ -153,7 +151,7 @@ public class TablaHash {
     }
 
     /**
-     * Verifica si un número es primo.
+     * verifica si es primo
      */
     public static boolean esPrimo(int num) {
         if (num <= 1) return false;
@@ -166,7 +164,7 @@ public class TablaHash {
     }
 
     /**
-     * Retorna el siguiente número primo >= min.
+     * retorna el siguiente número primo >= min
      */
     public static int siguientePrimo(int min) {
         int candidato = min;

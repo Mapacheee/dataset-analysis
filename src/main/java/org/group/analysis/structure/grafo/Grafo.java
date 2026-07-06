@@ -60,7 +60,7 @@ public class Grafo {
             actualU = actualU.getSiguiente();
         }
 
-        // 2. Agregar las aristas basadas en el IndiceContactos, asegurando simetría
+        //agregar las aristas basadas en el IndiceContactos
         actualU = listaUsuarios.getCabeza();
         while (actualU != null) {
             Usuario u = actualU.getDato();
@@ -86,11 +86,11 @@ public class Grafo {
 
         ResultadoBFS resultado = new ResultadoBFS();
         
-        // Estructuras auxiliares para el recorrido BFS
+        // estructuras auxiliares para el recorrido BFS
         Queue<Vertice> queue = new ArrayDeque<>();
         Set<String> visitados = new HashSet<>();
 
-        // Inicializar BFS
+        // Inicio BFS
         queue.add(raiz);
         visitados.add(raiz.getUsuario().getNombreUsuario());
 
@@ -112,7 +112,7 @@ public class Grafo {
                         visitados.add(nombreVecino);
                         queue.add(vecino);
 
-                        // Clasificar el contacto según el nivel/grado
+                        // clasificar el contacto segun nivel
                         if (nivel == 1) {
                             resultado.getGrado1().agregar(nombreVecino);
                         } else if (nivel == 2) {
